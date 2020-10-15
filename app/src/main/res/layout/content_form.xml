@@ -28,7 +28,6 @@
         android:background="@drawable/side_nav_bar"
         android:orientation="horizontal">
 
-
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

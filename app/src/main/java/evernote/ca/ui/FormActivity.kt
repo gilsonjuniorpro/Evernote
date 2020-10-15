@@ -68,7 +68,6 @@ class FormActivity : AppCompatActivity(), TextWatcher {
         }
     }
 
-
     private val callback: Callback<Note>
         get() = object : Callback<Note> {
 
