@@ -19,6 +19,9 @@ import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
 import retrofit2.Callback
 import retrofit2.Response
+import io.reactivex.Observable
+import io.reactivex.Observer
+import io.reactivex.disposables.Disposable
 
 
 class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -59,6 +62,37 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onStart() {
         super.onStart()
         dataSource.listNotes(callback)
+
+        val channel = createChannel()
+        val subscriber = createSubscriber()
+        channel.subscribe(subscriber)
+    }
+
+    private fun createChannel() : Observable<String> {
+        return Observable.create { emitter ->
+            emitter.onNext("Welcome")
+            emitter.onComplete()
+        }
+    }
+
+    private fun createSubscriber() : Observer<String> {
+        return object : Observer<String> {
+            override fun onSubscribe(d: Disposable) {
+                println("subscribed")
+            }
+
+            override fun onNext(t: String) {
+                println("new value is $t")
+            }
+
+            override fun onError(e: Throwable) {
+                println("the error is ${e.message}")
+            }
+
+            override fun onComplete() {
+                println("new value emitted")
+            }
+        }
     }
 
     private val callback: Callback<List<Note>>
