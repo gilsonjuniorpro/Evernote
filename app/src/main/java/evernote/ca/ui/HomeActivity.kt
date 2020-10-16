@@ -67,17 +67,29 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         dataSource.listNotes(callback)
 
         val subscriber = createSubscriber()
-
-        val channel = createChannel()
+        Observable.merge(createChannel(), createSpotfyChannel())
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(subscriber)
+
+        /*val channel = createChannel()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(subscriber)*/
     }
 
     private fun createChannel() : Observable<String> {
         return Observable.create { emitter ->
             println(Thread.currentThread().name)
             emitter.onNext("Welcome")
+            emitter.onComplete()
+        }
+    }
+
+    private fun createSpotfyChannel() : Observable<String> {
+        return Observable.create { emitter ->
+            println(Thread.currentThread().name)
+            emitter.onNext("Playing music")
             emitter.onComplete()
         }
     }
