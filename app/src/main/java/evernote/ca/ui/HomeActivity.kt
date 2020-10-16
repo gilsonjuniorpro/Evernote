@@ -21,7 +21,10 @@ import retrofit2.Callback
 import retrofit2.Response
 import io.reactivex.Observable
 import io.reactivex.Observer
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 
 
 class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -63,13 +66,17 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onStart()
         dataSource.listNotes(callback)
 
-        val channel = createChannel()
         val subscriber = createSubscriber()
-        channel.subscribe(subscriber)
+
+        val channel = createChannel()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(subscriber)
     }
 
     private fun createChannel() : Observable<String> {
         return Observable.create { emitter ->
+            println(Thread.currentThread().name)
             emitter.onNext("Welcome")
             emitter.onComplete()
         }
@@ -91,6 +98,7 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             override fun onComplete() {
                 println("new value emitted")
+                println(Thread.currentThread().name)
             }
         }
     }
