@@ -14,6 +14,7 @@ import evernote.ca.model.Note
 import com.google.android.material.navigation.NavigationView
 import evernote.ca.R
 import evernote.ca.model.RemoteDataSource
+import evernote.ca.model.User
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
@@ -69,6 +70,9 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onStart() {
         super.onStart()
         getAllNotes()
+
+        val user = User("Gilson")
+        dataSource.createNoteFromUser(user)
     }
 
     private fun getAllNotes() {
