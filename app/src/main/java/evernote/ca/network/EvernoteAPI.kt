@@ -1,6 +1,7 @@
 package evernote.ca.network
 
 import evernote.ca.model.Note
+import io.reactivex.Observable
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -10,12 +11,12 @@ import retrofit2.http.Path
 interface EvernoteAPI {
 
     @GET("/")
-    fun listNotes(): Call<List<Note>>
+    fun listNotes(): Observable<List<Note>>
 
     @GET("/{id}")
-    fun getNote(@Path("id") id: Int): Call<Note>
+    fun getNote(@Path("id") id: Int): Observable<Note>
 
     @POST("/create")
-    fun createNote(@Body note: Note): Call<Note>
+    fun createNote(@Body note: Note): Observable<Note>
 
 }

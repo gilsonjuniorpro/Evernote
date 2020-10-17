@@ -23,13 +23,17 @@ import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.Scheduler
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
 
 
 class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private val dataSource = RemoteDataSource()
+
+    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,78 +68,39 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onStart() {
         super.onStart()
-        dataSource.listNotes(callback)
+        getAllNotes()
+    }
 
-        val subscriber = createSubscriber()
-        Observable.merge(createChannel(), createSpotfyChannel())
+    private fun getAllNotes() {
+        val disposable = dataSource.listNotes()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(subscriber)
+            .subscribeWith(notesObserver)
 
-        /*val channel = createChannel()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(subscriber)*/
+        compositeDisposable.add(disposable)
     }
 
-    private fun createChannel() : Observable<String> {
-        return Observable.create { emitter ->
-            println(Thread.currentThread().name)
-            emitter.onNext("Welcome")
-            emitter.onComplete()
-        }
-    }
-
-    private fun createSpotfyChannel() : Observable<String> {
-        return Observable.create { emitter ->
-            println(Thread.currentThread().name)
-            emitter.onNext("Playing music")
-            emitter.onComplete()
-        }
-    }
-
-    private fun createSubscriber() : Observer<String> {
-        return object : Observer<String> {
-            override fun onSubscribe(d: Disposable) {
-                println("subscribed")
-            }
-
-            override fun onNext(t: String) {
-                println("new value is $t")
+    private val notesObserver : DisposableObserver<List<Note>>
+        get() = object : DisposableObserver<List<Note>>() {
+            override fun onNext(notes: List<Note>) {
+                displayNotes(notes)
             }
 
             override fun onError(e: Throwable) {
-                println("the error is ${e.message}")
+                e.printStackTrace()
+                displayError("loading error")
             }
 
             override fun onComplete() {
-                println("new value emitted")
-                println(Thread.currentThread().name)
+                println("complete")
             }
+
         }
+
+    override fun onStop() {
+        super.onStop()
+        compositeDisposable.clear()
     }
-
-    private val callback: Callback<List<Note>>
-        get() = object : Callback<List<Note>> {
-
-            override fun onFailure(call: retrofit2.Call<List<Note>>, t: Throwable) {
-                t.printStackTrace()
-                displayError("Erro ao carregar notas")
-            }
-
-            override fun onResponse(
-                call: retrofit2.Call<List<Note>>,
-                response: Response<List<Note>>
-            ) {
-                if (response.isSuccessful) {
-                    val notes = response.body()
-                    notes?.let {
-                        displayNotes(it)
-                    }
-                }
-            }
-
-        }
 
     fun displayError(message: String) {
         showToast(message)
