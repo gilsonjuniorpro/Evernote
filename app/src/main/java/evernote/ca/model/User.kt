@@ -1,14 +1,11 @@
 package evernote.ca.model
 
-class User(private val name: String) {
+import javax.inject.Inject
 
-    val note: Note
+class User @Inject constructor(private val note: Note) {
 
-    init {
-        note = Note(1, "First Note")
-    }
 
     fun showNoteTitle(){
-        println("Note of $name | title: ${note.title}")
+        println("title: ${note.title}")
     }
 }

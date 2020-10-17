@@ -3,6 +3,7 @@ package evernote.ca.model
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import javax.inject.Inject
 
 data class Note(
     var id: Int = 0,
@@ -11,6 +12,10 @@ data class Note(
     var date: String? = null,
     var body: String? = null
 ) {
+
+    @Inject
+    constructor() : this(0, "injected instance")
+
     val createdDate: String
         get() {
             val locale = Locale("pt", "BR")

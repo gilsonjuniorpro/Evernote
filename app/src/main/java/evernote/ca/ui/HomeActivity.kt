@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import evernote.ca.model.Note
 import com.google.android.material.navigation.NavigationView
 import evernote.ca.R
+import evernote.ca.model.DaggerUserComponent
 import evernote.ca.model.RemoteDataSource
 import evernote.ca.model.User
 import kotlinx.android.synthetic.main.activity_home.*
@@ -71,7 +72,10 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onStart()
         getAllNotes()
 
-        val user = User("Gilson")
+        val component = DaggerUserComponent.builder()
+            .build()
+
+        val user = component.getUser()
         dataSource.createNoteFromUser(user)
     }
 
