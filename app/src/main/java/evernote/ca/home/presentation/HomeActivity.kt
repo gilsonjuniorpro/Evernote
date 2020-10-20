@@ -25,7 +25,6 @@ class HomeActivity : AppCompatActivity(),
         Home.View {
 
     private lateinit var homePresenter: HomePresenter
-    private val dataSource = RemoteDataSource()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

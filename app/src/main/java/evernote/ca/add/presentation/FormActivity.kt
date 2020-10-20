@@ -11,12 +11,7 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import evernote.ca.R
-import evernote.ca.model.Note
 import evernote.ca.model.RemoteDataSource
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.observers.DisposableObserver
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_form.*
 
@@ -92,7 +87,6 @@ class FormActivity : AppCompatActivity(), TextWatcher, Add.View {
         note_title.setText(title)
         note_editor.setText(body)
     }
-
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
