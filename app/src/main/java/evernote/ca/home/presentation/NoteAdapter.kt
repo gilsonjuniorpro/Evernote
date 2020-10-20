@@ -1,4 +1,4 @@
-package evernote.ca.ui
+package evernote.ca.home.presentation
 
 import android.view.LayoutInflater
 import android.view.View

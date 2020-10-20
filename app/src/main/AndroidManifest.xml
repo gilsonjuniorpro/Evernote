@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Evernote"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
-        <activity android:name=".ui.HomeActivity"
+        <activity android:name=".home.presentation.HomeActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.Evernote.NoActionBar">
             <intent-filter>
@@ -22,7 +22,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".ui.FormActivity" />
+        <activity android:name=".add.presentation.FormActivity" />
     </application>
 
 </manifest>

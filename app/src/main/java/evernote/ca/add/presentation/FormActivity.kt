@@ -1,4 +1,4 @@
-package evernote.ca.ui
+package evernote.ca.add.presentation
 
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
@@ -15,21 +15,16 @@ import evernote.ca.model.Note
 import evernote.ca.model.RemoteDataSource
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
 import io.reactivex.observers.DisposableObserver
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_form.*
-import retrofit2.Callback
-import retrofit2.Response
 
-class FormActivity : AppCompatActivity(), TextWatcher {
+class FormActivity : AppCompatActivity(), TextWatcher, Add.View {
 
+    private lateinit var addPresenter: AddPresenter
     private var toSave: Boolean = false
     private var noteId: Int? = null
-
-    private val dataSource = RemoteDataSource()
-    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,70 +32,26 @@ class FormActivity : AppCompatActivity(), TextWatcher {
 
         noteId = intent.extras?.getInt("noteId")
 
+        setupPresenter()
         setupViews()
+    }
+
+    private fun setupPresenter() {
+        val dataSource = RemoteDataSource()
+        addPresenter = AddPresenter(this, dataSource)
     }
 
     override fun onStart() {
         super.onStart()
         noteId?.let {
-            getNote(it)
+            addPresenter.getNote(it)
         }
     }
 
     override fun onStop() {
         super.onStop()
-        compositeDisposable.clear()
+        addPresenter.stop()
     }
-
-    private fun getNote(noteId: Int) {
-        val disposable = dataSource.getNote(noteId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(getNoteObserver)
-
-        compositeDisposable.add(disposable)
-    }
-
-    private fun createNote(note: Note) {
-        val disposable = dataSource.createNote(note)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(createNoteObserver)
-
-        compositeDisposable.add(disposable)
-    }
-
-    private val getNoteObserver : DisposableObserver<Note>
-        get() = object : DisposableObserver<Note>() {
-            override fun onNext(note: Note) {
-                displayNote(note)
-            }
-
-            override fun onError(e: Throwable) {
-                e.printStackTrace()
-                println("loading error")
-            }
-
-            override fun onComplete() {
-                println("complete")
-            }
-        }
-
-    private val createNoteObserver : DisposableObserver<Note>
-        get() = object : DisposableObserver<Note>() {
-            override fun onNext(note: Note) {
-                finish()
-            }
-
-            override fun onError(e: Throwable) {
-                e.printStackTrace()
-                println("loading error")
-            }
-
-            override fun onComplete() {
-                println("complete")
-            }
-        }
 
     private fun setupViews() {
         setSupportActionBar(toolbar)
@@ -125,37 +76,35 @@ class FormActivity : AppCompatActivity(), TextWatcher {
         }
     }
 
-    fun displayError(message: String) {
+    override fun displayError(message: String) {
         showToast(message)
+    }
+
+    override fun returnToHome() {
+        finish()
     }
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun displayNote(note: Note?) {
-        // progress
-        if (note != null) {
-            note_title.setText(note.title)
-            note_editor.setText(note.body)
-        } else {
-            // no data
-        }
+    override fun displayNote(title: String, body: String) {
+        note_title.setText(title)
+        note_editor.setText(body)
     }
 
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == android.R.id.home) {
             return if (toSave && noteId == null) {
-                val note = Note()
-                note.title = note_title.text.toString()
-                note.body = note_editor.text.toString()
+                val title = note_title.text.toString()
+                val body = note_editor.text.toString()
 
-                createNote(note)
+                addPresenter.createNote(title, body)
 
                 true
             } else {
-                finish()
+                returnToHome()
                 true
             }
         }

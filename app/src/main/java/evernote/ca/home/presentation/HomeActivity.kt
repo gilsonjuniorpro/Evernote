@@ -1,4 +1,4 @@
-package evernote.ca.ui
+package evernote.ca.home.presentation
 
 import android.content.Intent
 import android.os.Bundle
@@ -13,35 +13,31 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import evernote.ca.model.Note
 import com.google.android.material.navigation.NavigationView
 import evernote.ca.R
-import evernote.ca.model.DaggerUserComponent
 import evernote.ca.model.RemoteDataSource
-import evernote.ca.model.User
+import evernote.ca.add.presentation.FormActivity
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
-import retrofit2.Callback
-import retrofit2.Response
-import io.reactivex.Observable
-import io.reactivex.Observer
-import io.reactivex.Scheduler
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.observers.DisposableObserver
-import io.reactivex.schedulers.Schedulers
 
 
-class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class HomeActivity : AppCompatActivity(),
+        NavigationView.OnNavigationItemSelectedListener,
+        Home.View {
 
+    private lateinit var homePresenter: HomePresenter
     private val dataSource = RemoteDataSource()
-
-    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
+        setupPresenter()
         setupViews()
+    }
+
+    private fun setupPresenter() {
+        val dataSource = RemoteDataSource()
+        homePresenter = HomePresenter(this, dataSource)
     }
 
     private fun setupViews() {
@@ -70,65 +66,32 @@ class HomeActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onStart() {
         super.onStart()
-        getAllNotes()
-
-        val component = DaggerUserComponent.builder()
-            .build()
-
-        val user = component.getUser()
-        dataSource.createNoteFromUser(user)
+        homePresenter.getAllNotes()
     }
-
-    private fun getAllNotes() {
-        val disposable = dataSource.listNotes()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeWith(notesObserver)
-
-        compositeDisposable.add(disposable)
-    }
-
-    private val notesObserver : DisposableObserver<List<Note>>
-        get() = object : DisposableObserver<List<Note>>() {
-            override fun onNext(notes: List<Note>) {
-                displayNotes(notes)
-            }
-
-            override fun onError(e: Throwable) {
-                e.printStackTrace()
-                displayError("loading error")
-            }
-
-            override fun onComplete() {
-                println("complete")
-            }
-
-        }
 
     override fun onStop() {
         super.onStop()
-        compositeDisposable.clear()
-    }
-
-    fun displayError(message: String) {
-        showToast(message)
+        homePresenter.stop()
     }
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
 
-    private fun displayNotes(notes: List<Note>) {
-        // progress
-        if (notes.isNotEmpty()) {
-            home_recycler_view.adapter = NoteAdapter(notes) { note ->
-                val intent = Intent(baseContext, FormActivity::class.java)
-                intent.putExtra("noteId", note.id)
-                startActivity(intent)
-            }
-        } else {
-            // no data
+    override fun displayError(message: String) {
+        showToast(message)
+    }
+
+    override fun displayNotes(notes: List<Note>) {
+        home_recycler_view.adapter = NoteAdapter(notes) { note ->
+            val intent = Intent(baseContext, FormActivity::class.java)
+            intent.putExtra("noteId", note.id)
+            startActivity(intent)
         }
+    }
+
+    override fun displayEmptyNotes() {
+
     }
 
     override fun onBackPressed() {
