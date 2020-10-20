@@ -38,7 +38,7 @@ class AddPresenter(
 
             override fun onError(e: Throwable) {
                 e.printStackTrace()
-                view.displayError("loading error")
+                view.displayError("Error creating note")
             }
 
             override fun onComplete() {
